@@ -23,13 +23,31 @@ func NewUserController(service service.UserService) *UserController {
 	return &UserController{userService: service}
 }
 
-
 func (controller *UserController) Create(ctx *gin.Context) {
-
     createUserRequest := request.CreateUserRequest{}
     err := ctx.ShouldBindJSON(&createUserRequest)
+	
     helper.ErrorPanic(err)
 
+    isAdmin := createUserRequest.Email == "Saber.essakhori@inwi.ma"
+
+	if createUserRequest.Email == "Saber.essakhori@inwi.ma" {
+		createUserRequest.IsAdmin = true
+	}
+
+    if isAdmin {
+        existingAdmin := controller.userService.FindAdmin()
+        if existingAdmin != nil {
+            webResponse := response.Response{
+                Code:   http.StatusForbidden,
+                Status: "An administrator already exists",
+                Data:   nil,
+            }
+
+            ctx.JSON(http.StatusForbidden, webResponse)
+            return
+        }
+    }
 
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(createUserRequest.Password), bcrypt.DefaultCost)
     helper.ErrorPanic(err)
@@ -38,17 +56,15 @@ func (controller *UserController) Create(ctx *gin.Context) {
 
     controller.userService.Create(createUserRequest)
 
-
-
     webResponse := response.Response{
-        Code:   201,
+        Code:   http.StatusCreated,
         Status: "The user has been created",
         Data:   nil,
     }
 
-
     ctx.JSON(http.StatusCreated, webResponse)
 }
+
 
 func Login(ctx *gin.Context) {
 
@@ -71,7 +87,7 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid password"})
 		return
 	}
-	tokenString, err := security.CreateToken(authInput.Firstname, authInput.IsAdmin)
+	tokenString, err := security.CreateToken(userFound.Firstname, userFound.IsAdmin)
     helper.ErrorPanic(err)
 
 
@@ -80,7 +96,7 @@ func Login(ctx *gin.Context) {
 	}
 
 	webResponse := response.Response{
-        Code:   201,
+        Code:   200,
         Status: "The user has been login",
         Data:   nil,
 		Token: tokenString,
@@ -122,7 +138,7 @@ func (controller *UserController) Delete(ctx *gin.Context) {
 
 	webResponse := response.Response{
 		Code:   204,
-		Status: "The user are removed",
+		Status: "The user are removed or don't exist",
 		Data:   nil,
 	}
 

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"my-api/controller"
+	"my-api/security"
 )
 
 func NewRouter(userController *controller.UserController) *gin.Engine {
@@ -26,12 +27,20 @@ func NewRouter(userController *controller.UserController) *gin.Engine {
 
 	router := service.Group("/api")
 	tagRouter := router.Group("/users")
-	tagRouter.GET("", userController.FindAll)
-	tagRouter.GET("/:userId", userController.FindById)
 	tagRouter.POST("", userController.Create)
 	tagRouter.POST("/login", controller.Login)
-	tagRouter.PATCH("/:userId", userController.Update)
-	tagRouter.DELETE("/:userId", userController.Delete)
+	
+
+	protectedRoutes := tagRouter.Group("")
+	protectedRoutes.Use(security.ProtectedHandler)
+
+
+	adminRoutes := tagRouter.Group("")
+	adminRoutes.Use(security.IsAdmin)
+	adminRoutes.GET("", userController.FindAll)
+	adminRoutes.GET("/:userId", userController.FindById)
+	adminRoutes.PATCH("/:userId", userController.Update)
+	adminRoutes.DELETE("/:userId", userController.Delete)
 
 	return service
 }

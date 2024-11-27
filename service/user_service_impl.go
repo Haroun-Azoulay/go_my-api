@@ -24,11 +24,13 @@ func NewUserServiceImpl(userRepository repository.UserRepository, validate *vali
 func (t UserServiceImpl) Create(user request.CreateUserRequest) {
 	err := t.Validate.Struct(user)
 	helper.ErrorPanic(err)
+
 	userModel := model.User{
 		Firstname: user.Firstname,
 		Lastname: user.Lastname,
 		Email: user.Email,
 		Password: user.Password,
+		IsAdmin: user.IsAdmin,
 	}
 	t.userRepository.Save(userModel)
 }
@@ -57,6 +59,7 @@ func (t UserServiceImpl) FindById(userId int) response.UserResponse {
 		Lastname: userData.Lastname,
 		Email: userData.Email,
 		Password: userData.Password,
+		IsAdmin: userData.IsAdmin,
 	}
 	return userResponse
 }
@@ -72,8 +75,14 @@ func (t UserServiceImpl) FindAll() []response.UserResponse {
 			Lastname: value.Lastname,
 			Email: value.Email,
 			Password: value.Password,
+			IsAdmin: value.IsAdmin,
 		}
 		users = append(users, user)
 	}
 	return users
+}
+
+func (t UserServiceImpl) FindAdmin() *model.User {
+    adminUser := t.userRepository.FindByCondition("is_admin = ?", true)
+    return adminUser
 }

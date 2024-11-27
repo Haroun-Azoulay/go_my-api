@@ -9,7 +9,7 @@ type User struct {
 	IsAdmin   bool   `gorm:"default:false" json:"isadmin"`
 }
 
-// TableName permet de définir explicitement le nom de la table.
+
 func (User) TableName() string {
     return "user"
 }

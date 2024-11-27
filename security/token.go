@@ -33,10 +33,11 @@ func VerifyToken(tokenString string) error {
     if err != nil {
        return err
     }
-   
+
     if !token.Valid {
        return fmt.Errorf("invalid token")
     }
    
     return nil
  }
+

@@ -10,4 +10,5 @@ type UserRepository interface {
 	Delete(user int)
 	FindById(userId int) (user model.User, err error)
 	FindAll() []model.User
+	FindByCondition(condition string, args ...interface{}) *model.User
 }

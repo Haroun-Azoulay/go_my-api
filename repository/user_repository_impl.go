@@ -17,6 +17,7 @@ func NewUserRepositoryImpl(Db *gorm.DB) UserRepository {
 }
 
 func (t UserRepositoryImpl) Save(User model.User) {
+	
 	result := t.Db.Create(&User)
 	helper.ErrorPanic(result.Error)
 
@@ -56,4 +57,13 @@ func (t UserRepositoryImpl) FindAll() []model.User {
 	results := t.Db.Find(&User)
 	helper.ErrorPanic(results.Error)
 	return User
+}
+
+func (r *UserRepositoryImpl) FindByCondition(condition string, args ...interface{}) *model.User {
+	var user model.User
+	result := r.Db.Where(condition, args...).First(&user)
+	if result.Error != nil {
+		return nil
+	}
+	return &user
 }
