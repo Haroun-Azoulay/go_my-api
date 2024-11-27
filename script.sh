@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$1" == "--stop" ]; then
-    docker compose down 
+    docker compose down
 
 elif [ "$1" == "--remove" ]; then
     docker compose down -v
@@ -9,7 +9,7 @@ elif [ "$1" == "--remove" ]; then
 elif [ "$1" == "--build" ]; then
     docker compose up --build
 
-else 
+else
     echo "Usage: ./script.sh [OPTION]"
     echo ""
     echo "Options:"

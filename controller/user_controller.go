@@ -2,17 +2,16 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"golang.org/x/crypto/bcrypt"
 	"my-api/data/request"
 	"my-api/data/response"
 	"my-api/database"
-	"my-api/model"
 	"my-api/helper"
-	"my-api/service"
+	"my-api/model"
 	"my-api/security"
+	"my-api/service"
+	"net/http"
 	"strconv"
-	"golang.org/x/crypto/bcrypt"
-	
 )
 
 type UserController struct {
@@ -24,47 +23,45 @@ func NewUserController(service service.UserService) *UserController {
 }
 
 func (controller *UserController) Create(ctx *gin.Context) {
-    createUserRequest := request.CreateUserRequest{}
-    err := ctx.ShouldBindJSON(&createUserRequest)
-	
-    helper.ErrorPanic(err)
+	createUserRequest := request.CreateUserRequest{}
+	err := ctx.ShouldBindJSON(&createUserRequest)
 
-    isAdmin := createUserRequest.Email == "Saber.essakhori@inwi.ma"
+	helper.ErrorPanic(err)
+
+	isAdmin := createUserRequest.Email == "Saber.essakhori@inwi.ma"
 
 	if createUserRequest.Email == "Saber.essakhori@inwi.ma" {
 		createUserRequest.IsAdmin = true
 	}
 
-    if isAdmin {
-        existingAdmin := controller.userService.FindAdmin()
-        if existingAdmin != nil {
-            webResponse := response.Response{
-                Code:   http.StatusForbidden,
-                Status: "An administrator already exists",
-                Data:   nil,
-            }
+	if isAdmin {
+		existingAdmin := controller.userService.FindAdmin()
+		if existingAdmin != nil {
+			webResponse := response.Response{
+				Code:   http.StatusForbidden,
+				Status: "An administrator already exists",
+				Data:   nil,
+			}
 
-            ctx.JSON(http.StatusForbidden, webResponse)
-            return
-        }
-    }
+			ctx.JSON(http.StatusForbidden, webResponse)
+			return
+		}
+	}
 
-    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(createUserRequest.Password), bcrypt.DefaultCost)
-    helper.ErrorPanic(err)
-    createUserRequest.Password = string(hashedPassword)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(createUserRequest.Password), bcrypt.DefaultCost)
+	helper.ErrorPanic(err)
+	createUserRequest.Password = string(hashedPassword)
 
+	controller.userService.Create(createUserRequest)
 
-    controller.userService.Create(createUserRequest)
+	webResponse := response.Response{
+		Code:   http.StatusCreated,
+		Status: "The user has been created",
+		Data:   nil,
+	}
 
-    webResponse := response.Response{
-        Code:   http.StatusCreated,
-        Status: "The user has been created",
-        Data:   nil,
-    }
-
-    ctx.JSON(http.StatusCreated, webResponse)
+	ctx.JSON(http.StatusCreated, webResponse)
 }
-
 
 func Login(ctx *gin.Context) {
 
@@ -88,25 +85,21 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	tokenString, err := security.CreateToken(userFound.Firstname, userFound.IsAdmin)
-    helper.ErrorPanic(err)
-
+	helper.ErrorPanic(err)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to generate token"})
 	}
 
 	webResponse := response.Response{
-        Code:   200,
-        Status: "The user has been login",
-        Data:   nil,
-		Token: tokenString,
-    }
+		Code:   200,
+		Status: "The user has been login",
+		Data:   nil,
+		Token:  tokenString,
+	}
 
-
-    ctx.JSON(http.StatusCreated, webResponse)
+	ctx.JSON(http.StatusCreated, webResponse)
 }
-
-
 
 func (controller *UserController) Update(ctx *gin.Context) {
 	updateUserRequest := request.UpdateUserRequest{}

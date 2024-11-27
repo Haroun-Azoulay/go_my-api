@@ -1,23 +1,20 @@
 package security
 
 import (
-	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"net/http"
 )
 
 func ProtectedHandler(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
-	tokenString := c.GetHeader("Authorization") 
-	
+	tokenString := c.GetHeader("Authorization")
 
 	if tokenString == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing authorization header"})
 		return
 	}
 	tokenString = tokenString[len("Bearer "):]
-
-
 
 	err := VerifyToken(tokenString)
 	if err != nil {

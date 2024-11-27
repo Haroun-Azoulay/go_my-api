@@ -11,13 +11,13 @@ import (
 
 type UserServiceImpl struct {
 	userRepository repository.UserRepository
-	Validate      *validator.Validate
+	Validate       *validator.Validate
 }
 
 func NewUserServiceImpl(userRepository repository.UserRepository, validate *validator.Validate) UserService {
 	return &UserServiceImpl{
 		userRepository: userRepository,
-		Validate:      validate,
+		Validate:       validate,
 	}
 }
 
@@ -27,10 +27,10 @@ func (t UserServiceImpl) Create(user request.CreateUserRequest) {
 
 	userModel := model.User{
 		Firstname: user.Firstname,
-		Lastname: user.Lastname,
-		Email: user.Email,
-		Password: user.Password,
-		IsAdmin: user.IsAdmin,
+		Lastname:  user.Lastname,
+		Email:     user.Email,
+		Password:  user.Password,
+		IsAdmin:   user.IsAdmin,
 	}
 	t.userRepository.Save(userModel)
 }
@@ -54,12 +54,12 @@ func (t UserServiceImpl) FindById(userId int) response.UserResponse {
 	helper.ErrorPanic(err)
 
 	userResponse := response.UserResponse{
-		Id:   userData.Id,
+		Id:        userData.Id,
 		Firstname: userData.Firstname,
-		Lastname: userData.Lastname,
-		Email: userData.Email,
-		Password: userData.Password,
-		IsAdmin: userData.IsAdmin,
+		Lastname:  userData.Lastname,
+		Email:     userData.Email,
+		Password:  userData.Password,
+		IsAdmin:   userData.IsAdmin,
 	}
 	return userResponse
 }
@@ -70,12 +70,12 @@ func (t UserServiceImpl) FindAll() []response.UserResponse {
 	var users []response.UserResponse
 	for _, value := range result {
 		user := response.UserResponse{
-			Id:   value.Id,
+			Id:        value.Id,
 			Firstname: value.Firstname,
-			Lastname: value.Lastname,
-			Email: value.Email,
-			Password: value.Password,
-			IsAdmin: value.IsAdmin,
+			Lastname:  value.Lastname,
+			Email:     value.Email,
+			Password:  value.Password,
+			IsAdmin:   value.IsAdmin,
 		}
 		users = append(users, user)
 	}
@@ -83,6 +83,6 @@ func (t UserServiceImpl) FindAll() []response.UserResponse {
 }
 
 func (t UserServiceImpl) FindAdmin() *model.User {
-    adminUser := t.userRepository.FindByCondition("is_admin = ?", true)
-    return adminUser
+	adminUser := t.userRepository.FindByCondition("is_admin = ?", true)
+	return adminUser
 }

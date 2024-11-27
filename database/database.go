@@ -10,7 +10,7 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() (*gorm.DB, error) {
-    // Utilisez le DSN correct pour Docker ou local
+	
 	dsn := "root:root@tcp(my-api-db:3306)/myapi?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
