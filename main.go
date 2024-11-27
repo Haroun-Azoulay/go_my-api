@@ -3,23 +3,45 @@ package main
 import (
 	"log"
 	"net/http"
-	"github.com/gin-gonic/gin"
 	"my-api/database"
+	"my-api/controller"
+	"my-api/helper"
+	"my-api/model"
+	"my-api/repository"
+	"my-api/router"
+	"my-api/service"
+	"github.com/go-playground/validator/v10"
 )
 
 func main() {
-	err := database.ConnectDB()
+
+	// Database
+	db, err := database.ConnectDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
+	
+	validate := validator.New()
 
-	r := gin.Default()
+	db.Table("user").AutoMigrate(&model.User{})
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	// Repository
+	userRepository := repository.NewUserRepositoryImpl(db)
 
-	r.Run() // Par défaut, écoute sur 0.0.0.0:8080
+	// Service
+	userService := service.NewUserServiceImpl(userRepository, validate)
+
+	// Controller
+	userController := controller.NewUserController(userService)
+
+	// Router
+	routes := router.NewRouter(userController)
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: routes,
+	}
+
+	err = server.ListenAndServe()
+	helper.ErrorPanic(err)
 }
